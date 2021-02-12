@@ -29,21 +29,29 @@
 	
 \maketitle
 
-The aim of this project is to evaluate the performance of different MCMC methods for computing posterior distributions. Achieving this can be expressed as two sub objectives:
+The aim of this project is to evaluate the performance of different Markov Chain Monte–Carlo (MCMC) methods for computing posterior distributions. Achieving this can be expressed as two sub objectives:
 %
 \begin{enumerate}
-	\item Implementing the code for two selected algorithms using R.
-	\item Evaluating the performance of these algorithms using effective sample size (ESS) and real-effective sample size (RESS) methods.
+	\item Implementing the code for two selected algorithms using \texttt{R}.
+	\item Evaluating the performance of these algorithms using effective sample size (ESS) and exploration quality (EQ) \citep{Ballnus2017, Turner2017}.
 \end{enumerate}
 
 
 \section{Implementation}
 
-To 
+Two MCMC algorithms are selected considering the time available for this project. The commonly known Metropolis-Hastings (MH) and more advanced Parallel Tempering (PT) algorithms are used in the comparison of this project. These methods are implemented for 2 cases.
+%
+\begin{enumerate}
+	\item A simple Bernoulli distribution with a continuous Uniform parameter, and
+	\item a finite mixture problem.
+\end{enumerate}
 
-\citep{Turner2017}
+
+\section{Performance Evaluation}
+
+To evaluate the performance of the algorithms, can be evaluated separately for the two problems. To this end, ESS and EQ methods can be used. Using two different tools to benchmark will allow for a comparison between the benchmarking tools too. The computation time can also be measured as an optional benchmarking tool.
 
 \bibliographystyle{chicago}
-\bibliography{../references/stat520_references}
+\bibliography{../../references/mcmc_benchmarking_references}
 	
 \end{document}
