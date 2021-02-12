@@ -1,3 +1,9 @@
+######
+## TeX files
+
+## PDFLatex aux directory
+*/latex_compile/
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
@@ -271,3 +277,8 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+
+
+#####
+## Reference PDFs
+/references/*.pdf
