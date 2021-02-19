@@ -1,5 +1,5 @@
 ## Number of iterations used by default
-n_iter <- 10000
+chain_length <- 10000
 
 ## Burn-in proportion
 burn_prop <- 0.5
