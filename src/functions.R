@@ -1,3 +1,5 @@
+source("main.R")
+
 #####
 ## A Normal proposal distribution: q(x*, xi)
 d_proposal <- function(theta_s, 
@@ -24,17 +26,20 @@ r_proposal <- function(theta_i,
 
 #####
 ## Run the Metropolis-Hastings algorithm
-run_mh <- function(data, sd = 1, 
-                   hyper_params = NULL, 
-                   n_iter = 10000,
+run_mh <- function(data, 
+                   n_iter,
+                   hyper_params = NULL,
                    ...){
-  
+
   ## initialize vector to save the sampled values
   sampled_vals <- rep(NA, 
                       times = n_iter)
   
   ## initial parameter
   sampled_vals[1] <- 0.5
+  
+  ## number burn-in
+  n_burnin <- ceiling(burn_prop * n_iter)
   
   
   for (j in 1:n_iter) {
@@ -56,5 +61,5 @@ run_mh <- function(data, sd = 1,
                                 no = theta_i)
   }
   
-  return(sampled_vals)
+  return(sampled_vals[n_burnin:n_iter])
 }
