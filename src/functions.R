@@ -29,6 +29,7 @@ r_proposal <- function(theta_i,
 run_mh <- function(data, 
                    n_iter,
                    hyper_params = NULL,
+                   burn = TRUE,
                    ...){
 
   ## initialize vector to save the sampled values
@@ -61,5 +62,11 @@ run_mh <- function(data,
                                 no = theta_i)
   }
   
-  return(sampled_vals[n_burnin:n_iter])
+  if(burn){
+    out <- sampled_vals[n_burnin:n_iter]
+  } else {
+    out <- sampled_vals
+  }
+  
+  return(out)
 }
