@@ -63,7 +63,7 @@ run_mh <- function(data,
   }
   
   if(burn){
-    out <- sampled_vals[n_burnin:n_iter]
+    out <- sampled_vals[(n_burnin+1):n_iter]
   } else {
     out <- sampled_vals
   }
