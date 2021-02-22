@@ -23,6 +23,10 @@ likelihood <- function(data, theta){
     bernoulli_likelihood <- prod(dbinom(x = data,
                                         size = 1,
                                         prob = theta))
+    
+    # n_data <- length(data)
+    # sum_data <- sum(data)
+    # bernoulli_likelihood <- theta^sum_data * (1 - theta)^(n_data - sum_data)
   }
   
   return(bernoulli_likelihood)
@@ -41,13 +45,13 @@ joint_distribution <- function(data, theta, hyper_params){
 #####
 set.seed(2021)
 
-data <- c(0, 0, 0, 1, 1, 1)
+data <- c(0, 0, 0)
 alpha <- 1
 beta <- 1
 
 begin_time <- Sys.time()
 mh_sample <- run_mh(data, 
-                    n_iter = chain_length,
+                    n_samples = n_samples,
                     hyper_params = c(alpha, beta),
                     sd = 1)
 end_time <- Sys.time()
@@ -66,4 +70,4 @@ y <- dbeta(x,
            shape1 = alpha + sum(data), 
            shape2 = beta + length(data) - sum(data))
 lines(x, y)
-
+rm(x, y)
