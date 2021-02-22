@@ -45,10 +45,17 @@ data <- c(0, 0, 0, 1, 1, 1)
 alpha <- 1
 beta <- 1
 
+begin_time <- Sys.time()
 mh_sample <- run_mh(data, 
                     n_iter = chain_length,
                     hyper_params = c(alpha, beta),
                     sd = 1)
+end_time <- Sys.time()
+print(end_time - begin_time)
+
+plot(mh_sample,
+     type = 'l')
+
 hist(mh_sample, 
      probability = TRUE)
 
