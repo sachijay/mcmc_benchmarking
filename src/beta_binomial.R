@@ -170,6 +170,9 @@ y_theoretical <- dbeta(x,
 
 y_prior <- s1$prior
 
+
+pdf(file = paste0(fig_dir,
+                  "beta_bin_s1_dist.pdf"))
 ggplot(mapping = aes(x = s1$pos_sample,
                      y = after_stat(density))) + 
   geom_histogram() +
@@ -185,8 +188,9 @@ ggplot(mapping = aes(x = s1$pos_sample,
                                   "Prior")) +
   theme_minimal() + 
   labs(x = "Posterior sample",
-       y = "Density")
-
+       y = "Density", 
+       title = latex2exp::TeX(sprintf(r"($\alpha = %d, \beta = %d$)", s1$param["alpha"], s1$param["beta"])))
+dev.off()
 
 s2 <- beta_bin_bench_vals[[length(beta_bin_bench_vals)]]
 x <- s2$prior_x
@@ -196,6 +200,8 @@ y_theoretical <- dbeta(x,
 
 y_prior <- s2$prior
 
+pdf(file = paste0(fig_dir,
+                  "beta_bin_s99_dist.pdf"))
 ggplot(mapping = aes(x = s2$pos_sample,
                      y = after_stat(density))) + 
   geom_histogram() +
@@ -212,4 +218,6 @@ ggplot(mapping = aes(x = s2$pos_sample,
                                   "Prior")) +
   theme_minimal() + 
   labs(x = "Posterior sample",
-       y = "Density")
+       y = "Density",
+       title = latex2exp::TeX(sprintf(r"($\alpha = %d, \beta = %d$)", s2$param["alpha"], s2$param["beta"])))
+dev.off()
