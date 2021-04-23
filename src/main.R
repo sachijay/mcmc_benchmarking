@@ -14,3 +14,7 @@ burn_prop <- 0.5
 ## Figures directory
 fig_dir <- paste0(here::here("figures"),
                   "/")
+
+## Data directory
+data_dir <- paste0(here::here("data"),
+                   "/")
