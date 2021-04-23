@@ -70,7 +70,13 @@ run_mh <- function(data,
     # 
     # print("x_s = ")
     # print(x_s)
+    
+    # print("pi_i = ")
+    # print(joint_distribution(data, x_i, hyper_params, annealing))
     # 
+    # print("pi_s = ")
+    # print(joint_distribution(data, x_s, hyper_params, annealing))
+
     # print("r = ")
     # print(r)
     # 
