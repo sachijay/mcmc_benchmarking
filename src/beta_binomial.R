@@ -181,6 +181,8 @@ ggplot(mapping = aes(x = param_vec,
 dev.off()
 
 ## Plot ESS vs parameter value
+pdf(file = paste0(fig_dir,
+                  "beta_bin_mh_ess_params.pdf"))
 ggplot(mapping = aes(x = param_vec,
                      y = mh_ess)) + 
   geom_line() +
@@ -189,6 +191,7 @@ ggplot(mapping = aes(x = param_vec,
        y = "ESS"
        # title = "ESS vs parameters for Beta-Binomial"
   )
+dev.off()
 
 ## Plot the ESS/time vs parameter value
 pdf(file = paste0(fig_dir,
@@ -309,6 +312,8 @@ ggplot(mapping = aes(x = param_vec,
 dev.off()
 
 ## Plot ESS vs parameter value
+pdf(file = paste0(fig_dir,
+                  "beta_bin_pt_ess_params.pdf"))
 ggplot(mapping = aes(x = param_vec,
                      y = pt_ess)) + 
   geom_line() +
@@ -317,6 +322,7 @@ ggplot(mapping = aes(x = param_vec,
        y = "ESS"
        # title = "ESS vs parameters for Beta-Binomial"
   )
+dev.off()
 
 ## Plot the ESS/time vs parameter value
 pdf(file = paste0(fig_dir,
