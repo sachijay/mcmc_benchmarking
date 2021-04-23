@@ -221,7 +221,6 @@ pdf(file = paste0(fig_dir,
 ggplot(mapping = aes(x = s2$mh_sample,
                      y = after_stat(density))) + 
   geom_histogram() +
-  geom_histogram() +
   geom_line(mapping = aes(x = x,
                           y = y_theoretical,
                           colour = "darkblue"), 
