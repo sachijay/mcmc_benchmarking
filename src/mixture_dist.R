@@ -1,5 +1,6 @@
-#####
-## This file runs simulations for the mixture distribution problem
+#####################################################################
+## This file runs simulations for the mixture distribution problem ##
+#####################################################################
 
 
 #####
