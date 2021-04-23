@@ -11,4 +11,4 @@ Read project report [here](/docs/final/mcmc_benchmarking_final.pdf).
 
 ## Source
 
-Find the source code [here](/src)
+Find the source code [here](/src).
