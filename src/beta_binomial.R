@@ -461,9 +461,10 @@ pdf(file = paste0(fig_dir,
 ggplot(mapping = aes(x = log10(n_samples_vec),
                      y = pt_ess)) + 
   geom_line() +
-  theme(x = latex2exp::TeX(r"($\log_{10}$ (Samples) )"),
-        y = "ESS"
-        # title = "ESS vs number of samples for Beta-Binomial"
+  theme_minimal() + 
+  labs(x = latex2exp::TeX(r"($\log_{10}$ (Samples) )"),
+       y = "ESS"
+       # title = "ESS vs number of samples for Beta-Binomial"
   )
 dev.off()
 
