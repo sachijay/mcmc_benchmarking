@@ -122,8 +122,6 @@ run_pt <- function(data,
   sampled_vals <- matrix(NA,
                          nrow = n_samples + 1,
                          ncol = n_chains)
-  # sampled_vals <- rep(NA,
-  #                     times = n_samples + 1)
   
   ## Initial parameter
   sampled_vals[1,] <- rep(init_vals, times = n_chains)
