@@ -2,10 +2,15 @@
 
 \usepackage{amsfonts}
 \usepackage{amsmath}
+
 \usepackage{natbib}
 
+\usepackage{subfigure}
+
+\usepackage[ruled, vlined]{algorithm2e}
+
 \usepackage{graphicx}
-\graphicspath{{figures/}}
+\graphicspath{{../../figures/}}
 
 \usepackage{geometry}
 \geometry{
@@ -14,6 +19,18 @@
 	right=2cm, 
 	bottom=2cm
 }
+
+\usepackage[colorlinks=false,
+pdfpagemode=UseNone,
+urlcolor=blue,
+bookmarks=true,
+backref=page,
+hidelinks,
+pdftitle={Benchmarking MCMC methods},%
+pdfauthor={Pramoda Jayasinghe},%
+pdfsubject={Benchmarking MCMC methods},%
+pdfkeywords={MCMC, Metropolis-Hastings, Parallel tempering, Effective sample size}
+]{hyperref}  
 
 \title{
 	{\large \vspace*{-4em}
@@ -27,46 +44,288 @@
 
 \begin{document}
 	
-\maketitle
-
-\section{Introduction}
-
-\section{Methods}
-
-\section{Simulation studies}
-
-\subsection{Beta-Binomial}
-
-\subsection{Mixture distribution}
-
-\section{Conclusions}
-
-
-\newpage
-
-The aim of this project is to evaluate the performance of different Markov Chain Monte–Carlo (MCMC) methods for computing posterior distributions. Achieving this can be expressed as two sub objectives:
-%
-\begin{enumerate}
-	\item Implementing the code for two selected algorithms using \texttt{R}.
-	\item Evaluating the performance of these algorithms using effective sample size (ESS) and exploration quality (EQ) \citep{Ballnus2017, Turner2017}.
-\end{enumerate}
-
-
-\section{Implementation}
-
-Two MCMC algorithms are selected considering the time available for this project. The commonly known Metropolis-Hastings (MH) and more advanced Parallel Tempering (PT) algorithms are used in the comparison of this project. These methods are implemented for 2 cases.
-%
-\begin{enumerate}
-	\item A simple Bernoulli distribution with a continuous Uniform parameter, and
-	\item a finite mixture problem.
-\end{enumerate}
-
-
-\section{Performance Evaluation}
-
-To evaluate the performance of the algorithms, can be evaluated separately for the two problems. To this end, ESS and EQ methods can be used. Using two different tools to benchmark will allow for a comparison between the benchmarking tools too. The computation time can also be measured as an optional benchmarking tool.
-
-\bibliographystyle{chicago}
-\bibliography{../../references/mcmc_benchmarking_references}
+	\maketitle
+	
+	\section{Introduction}
+	
+	Statistical models are used in many practical applications to quantitatively understand an underlying process and to predict the dynamics of the process under new data. The parameters in such models are usually unknown and need to be estimated. Estimating these parameters provides insight into the way that the process of interest behaves \citep{Ballnus2017}.
+	
+	The parameter estimation is usually done using either a frequentist or a Bayesian approach. Frequentist methods usually employ an optimization of a loss function or a likelihood function. The uncertainty of the estimates is usually obtained theoretically using asymptotic distributions or using techniques such as bootstrapping. Bayesian methods often involve sampling parameters from a defined posterior distribution, using a Markov chain Monte Carlo (MCMC) method. Different tools used in either the frequentist setting or the Bayesian setting have their advantages and disadvantages.
+	
+	The literature exists for many comparisons and benchmarks of frequentist optimization tools \citep{Villaverde2015} but the same cannot be said for benchmarking MCMC methods in the Bayesian setting \citep{Ballnus2017}. Considering the popularity of MCMC methods, especially over the last few decades, it is important to explore the performance of these methods with different Bayesian problems.
+	
+	This project aims to examine the ``performance" of 2 main MCMC algorithms, namely Metropolis-Hastings and Parallel Tempering. To achieve this aim, there are 2 objectives defined for this project.
+	%
+	\begin{itemize}
+		\item Implement MH and PT algorithms in \texttt{R}.
+		\item Evaluate the ``performance" of these algorithms under varying difficulties of problems.
+	\end{itemize}
+	
+	
+	\section{Methods}
+	
+	\subsection{MCMC Algorithms}
+	
+	The two algorithms considered in this study are \emph{Metropolis-Hastings} (MH) and \emph{Parallel Tempering} (PT). The MH algorithm (Algorithm \ref{algo:mh}) was selected as a simple algorithm that is easy to implement with comparatively lower computational costs. An advantage of this algorithm is that it can use a function proportional to the posterior as calculating the necessary normalization factor is often extremely difficult in practice \citep{Robert2010}.
+	
+	\begin{algorithm}[h]
+		\SetAlgoLined
+		
+		\KwIn{Iterations: $N_{iter}$, 
+			Unnormalized density: $\gamma(x)$, 
+			Proposal: $q(x \mid y)$, 
+			Initial state: $x^{(0)}$}
+		
+		\KwResult{Approximated posterior sample}
+		
+		\For{$i \gets 0$ \textbf{to} $N_{iter}$} {
+			1. Generate $x^{*} \sim q(y \mid x^{(0)})$\\
+			
+			2. Compute the MH ratio 
+			$$r = \frac{\gamma(x^{*})}{\gamma(x^{(i)})} \frac{q(x^{(i)} \mid x^{*})}{q(x^{*} \mid x^{(i)})}$$
+			
+			3. Simulate an acceptance variable
+			$$a \sim Bern(min{1,r})$$
+			
+			4.\\
+			\uIf{$a = 1$}{$x^{(i+1)} = x^{*}$}
+			\Else{$x^{(i+1)} = x^{(i)}$}
+		}
+		\caption{Metropolis-Hastings}
+		\label{algo:mh}
+	\end{algorithm}
+	
+	Single-chain algorithms such as MH might have trouble working with different posterior modes, especially if they are separated by areas of low probability density. The PT algorithm samples from multiple versions of the posterior with different \emph{annealing parameters}; $(\beta_0 = 0, \dots, \beta_N = 1)$ in parallel (Algorithm \ref{algo:pt}). The ``landscape" corresponding to $\beta_0 = 0$ is easy to explore since it would be sampling from the prior. On the other hand, the landscape of interest corresponds to $\beta_N = 1$, which is the posterior. 
+	
+	\begin{algorithm}[h]
+		\SetAlgoLined
+		
+		\KwIn{Iterations: $N_{iter}$, 
+			Initial state: $x^{(0)}$, 
+			Annealing parameters: $(\beta_0 = 0, \dots, \beta_N = 1)$,
+			Landscapes: $\pi_{j}(x) := \pi_{\beta_{j}}(x)$}
+		
+		\KwResult{Approximated posterior sample}
+		
+		\For{$i \gets 0$ \textbf{to} $N_{iter}$} {
+			\For{$j \gets 0$ \textbf{to} $N$} {
+				Generate $x^{*}_{j}$ using MH with landscape $\pi_{j}(x)$
+			}
+			
+			Swap between neighbouring chains based on the Metropolis ratio
+			$$\frac{\pi_{j}(x^{(i)}_{j+1}) \pi_{j+1}(x^{(i)}_{j})}{\pi_{j}(x^{(i)}_{j}) \pi_{j+1}(x^{(i)}_{j+1})}$$
+		}
+		\caption{Parallel tempering}
+		\label{algo:pt}
+	\end{algorithm}
+	
+	For this project, these algorithms are implemented in \texttt{R}. Please see Appendix \ref{sec:suppmat} for further details.
+	
+	\subsection{Effective sample size (ESS)}
+	
+	Given the number of iterations in a Markov chain, ESS measures the size of an independent and identically distributed (i.i.d.) sample with the same standard error \citep{Gong2016}. Therefore having a higher ESS, compared to the number of MCMC samples is a desirable property of the algorithm. To estimate the ESS, \texttt{mcmcse::ess()} function was used which employs a batch means estimator. The estimate is given by
+	%
+	\begin{align*}
+		\widehat{ESS} = n \frac{\lambda^2}{\sigma^2},
+	\end{align*}
+	%
+	where $\lambda^2$ is the sample variance and $\sigma^2$ is an estimate of the variance in the CLT \citep{Flegal2010}.
+	
+	
+	\section{Simulation studies}
+	
+	The performance of MH and PT algorithms is evaluated under two examples.
+	%
+	\begin{itemize}
+		\item Beta-Binomial problem with varying prior parameters and a varying number of iterations.
+		\item Mixture distribution problem with data generated from varying mixture parameters.
+	\end{itemize}
+	
+	The ``performance" of the algorithm is evaluated under the running time, effective sample size and effective sample size per second of running time. 
+	
+	All these algorithms were run as a serial program on an Intel Core i7-8750H running Windows 10.
+	
+	
+	\subsection{Beta-Binomial}
+	
+	Consider a Binomial random variable from $Bin(n, p)$ and a prior on $p \sim Beta(\alpha, \beta)$. If the data shows $k$ successes, then the posterior can be expressed as $Beta(\alpha + k, \beta + (n - k))$.
+	
+	This example aims to change the prior; $(\alpha, \beta)$ and examine the performance characteristics mentioned above. For this example, a special case $\alpha = \beta$ was selected while increasing these would make the prior more peaked eventually making the sampling process harder.
+	
+	Throughout the simulation, $n$ was selected to be $3$ and $k$ was set to $0$. These values were selected to keep the problem simple and to make the likelihood skew to the right. $50$ values were used for $\alpha = \beta$ in $(1, 3, 5, \dots, 99)$ to ensure that the prior would take forms from a Uniform distribution to a highly peaked distribution. Generated MH samples, theoretical posteriors and the prior for hyper-parameters $\alpha = \beta = 1$ and $99$ are shown in Figure \ref{fig:beta_bin_mh_samples}.
+	
+	\begin{figure}[h]%
+		\centering
+		\subfigure[][]
+		{\label{fig:beta_bin_mh_s1_dist}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_mh_s1_dist}
+		} %\qquad
+		\subfigure[][]{
+			\label{fig:beta_bin_mh_s99_dist}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_mh_s99_dist}%
+		}
+		\caption{The generated MH samples, theoretical posterior (red) and the prior (green) used for \subref{fig:beta_bin_mh_s1_dist} $\alpha = \beta = 1$ and \subref{fig:beta_bin_mh_s99_dist} $\alpha = \beta = 99$.}
+		\label{fig:beta_bin_mh_samples}
+	\end{figure}
+	
+	The MH algorithm was used with a $\mathcal{N}(\cdot , 1)$ proposal function. The use of a symmetric proposal simplifies the MH ratio in Algorithm \ref{algo:mh} into a simple Metropolis ratio. The initial value for the algorithm was set to $0.5$, but it was observed that the starting value did not have a significant impact on the results in the study. $10,000$ samples were generated in the simulation with a $50\%$ burn-in proportion.
+	
+	The PT algorithm used the same properties mentioned for the MH algorithm, with the only addition being the use of $5$ chains. The number of chains was decided on the computation time for the simulation.
+	
+	The computation times taken to generate the posterior samples have not changed with the increase of the hyper-parameters in either MH or PT algorithms (Figure \ref{fig:beta_bin_time_params}). This is expected as the sampling process is the same regardless of the value of the hyper-parameters. 
+	
+	\begin{figure}[h]%
+		\centering
+		\subfigure[][]
+		{\label{fig:beta_bin_mh_ess_params}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_mh_ess_params}
+		} %\qquad
+		\subfigure[][]{
+			\label{fig:beta_bin_pt_ess_params}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_pt_ess_params}%
+		}
+		\caption{ESS vs. the value of the hyper-parameter for \subref{fig:beta_bin_mh_ess_params} MH and \subref{fig:beta_bin_pt_ess_params} PT algorithms.}
+		\label{fig:beta_bin_ess_params}
+	\end{figure}
+	
+	
+	Figure \ref{fig:beta_bin_ess_params} shows that PT generally has better performance for any value of the hyper-parameters. But \ref{fig:beta_bin_esspt_params} shows that when the computation time is considered, MH has about an $10$ times performance advantage over PT.
+	
+	\begin{figure}[h]%
+		\centering
+		\subfigure[][]
+		{\label{fig:beta_bin_mh_esspt_params}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_mh_esspt_params}
+		} %\qquad
+		\subfigure[][]{
+			\label{fig:beta_bin_pt_esspt_params}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_pt_esspt_params}%
+		}
+		\caption{$\log$-transformed ESS per second of computation time vs. the value of the hyper-parameter for \subref{fig:beta_bin_mh_esspt_params} MH and \subref{fig:beta_bin_pt_esspt_params} PT algorithms.}
+		\label{fig:beta_bin_esspt_params}
+	\end{figure}
+	
+	
+	A simulation was also done to explore the relationship of the ESS with the number of MCMC samples for the two algorithms. The running time increased exponentially with the number of samples, especially for PT (Figure \ref{fig:beta_bin_time_samples}). This is understandable as it will have to generate samples for $5$ chains separately. This result is consistent with the observations by \cite{Ballnus2017}. 
+	
+	\begin{figure}[h]%
+		\centering
+		\subfigure[][]
+		{\label{fig:beta_bin_mh_esspt_samples}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_mh_esspt_samples}
+		} %\qquad
+		\subfigure[][]{
+			\label{fig:beta_bin_pt_esspt_samples}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_pt_esspt_samples}%
+		}
+		\caption{$\log$-transformed ESS per second of computation time vs. $\log$-transformed number of MCMC samples for \subref{fig:beta_bin_mh_esspt_samples} MH and \subref{fig:beta_bin_pt_esspt_samples} PT algorithms.}
+		\label{fig:beta_bin_esspt_samples}
+	\end{figure}
+	
+	In both algorithms, the time-adjusted ESS does not change when the number of MCMC samples is increased. This result is a bit suspicious as one would expect the ESS to increase with the number of samples. One explanation is that the increased time incurred by increasing the samples is in equilibrium with the ESS.
+	
+	
+	\subsection{Mixture distribution}
+	
+	In this example, a mixture distribution is considered as
+	%
+	\begin{align}
+		f(x; \mu_1, \mu_2, p) = p \mathcal{N}(\mu_1, 2^2) + (1-p) \mathcal{N}(\mu_2, 2^2).
+		\label{eq:mixture}
+	\end{align}
+	
+	Prior distributions were set as below,
+	%
+	\begin{align*}
+		p &\sim Beta(3, 2)\\
+		\mu_1 &\sim \mathcal{N}(1, 2^2)\\
+		\mu_2 &\sim \mathcal{N}(11, 2^2).
+	\end{align*}
+	
+	Data for this example was generated from \eqref{eq:mixture} with $p = 0.3$ and varying values of $\mu_1$ and $\mu_2$ (Figure \ref{fig:mixture_sample_data}). The values of $\mu_1$ and $\mu_2$ were selected such that the distance between the two means increases; $\mu_1 \in (-5, \dots, 2)$ and $\mu_2 \in (10, \dots, 3)$.
+	
+	Only the MH algorithm was used in this example. The properties of the algorithm were set similar to the Beta-Binomial example, with the only exception being using a $\mathcal{N}(\cdot , 0.5^2)$ proposal. This was done to limit the jump of the proposal from one mode to another.
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{mixture_mh_esspt_diff}
+		\caption{$\log$-transformed ESS per second of computation time vs. $\mu_2 - \mu_1$ for the mixture distribution example.}
+		\label{fig:mixture_mh_esspt_diff}
+	\end{figure}
+	
+	Figure \ref{fig:mixture_mh_esspt_diff} shows that similar to the Beta-Binomial example, the ESS decreases when the likelihood has mixture means that are further apart.
+	
+	
+	\section{Discussion}
+	
+	One objective for this project was to implement MH and PT algorithms in \texttt{R}. The way the PT algorithm is implemented, it is only able to handle a chain in $\mathbb{R}$. This is the reason that PT is not used in the mixture distribution example. The implementation should be expanded to handle chains of higher dimensions.
+	
+	The second objective was to evaluate the performance of MH and PT algorithms. It was observed that MH was about $10$ times faster than the PT algorithm. This is understandable due to the extra sample generation in a multi-chain algorithm such as PT. The speed of the PT algorithm can be greatly improved by using a parallelization library such as \texttt{Rmpi}. 
+	
+	It was also seen that PT performed much better than MH when the ESS was considered. This result is consistent with the observations by \cite{Ballnus2017} and \cite{Valderrama-Bahamondez2019}. Although this was the case, when ESS was adjusted for the running time, MH performed about $10$ times better than PT.
+	
+	The time adjusted-ESS showed that increasing the number of MCMC samples does not necessarily increase the performance of either algorithm. Which is an interesting property.
+	
+	The MC standard errors were not considered in this study. To properly evaluate the performance of these algorithms the statistical efficiencies should be also accounted for.
+	
+	\bibliographystyle{chicago}
+	\bibliography{../../references/mcmc_benchmarking_references}
+	
+	\appendix
+	\section{Supplementary material}
+	\label{sec:suppmat}
+	
+	The entire GitHub repository is available at \url{https://github.com/sachijay/mcmc_benchmarking}. Please visit \url{https://github.com/sachijay/mcmc_benchmarking/tree/main/src} to view the source code for this project (in \texttt{R} scripts).
+	
+	\section{Additional figures}
+	
+	\begin{figure}[h]%
+		\centering
+		\subfigure[][]
+		{\label{fig:beta_bin_mh_time_params}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_mh_time_params}
+		} %\qquad
+		\subfigure[][]{
+			\label{fig:beta_bin_pt_time_params}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_pt_time_params}%
+		}
+		\caption{Running time vs. the value of the hyper-parameter for \subref{fig:beta_bin_mh_time_params} MH and \subref{fig:beta_bin_pt_time_params} PT algorithms.}
+		\label{fig:beta_bin_time_params}
+	\end{figure}
+	
+	\begin{figure}[h]%
+		\centering
+		\subfigure[][]
+		{\label{fig:beta_bin_mh_time_samples}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_mh_time_samples}
+		} %\qquad
+		\subfigure[][]{
+			\label{fig:beta_bin_pt_time_samples}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{beta_bin_pt_time_samples}%
+		}
+		\caption{Running time vs. $\log$-transformed number of MCMC samples for \subref{fig:beta_bin_mh_time_samples} MH and \subref{fig:beta_bin_pt_time_samples} PT algorithms.}
+		\label{fig:beta_bin_time_samples}
+	\end{figure}
+	
+	\begin{figure}[h]
+		\centering
+		\includegraphics[width=0.4\textwidth]{mixture_sample_data}
+		\caption{Generated data from a Normal mixture distribution \eqref{eq:mixture} with $\mu_1 = 2$, $\mu_2 = 10$ and $p = 0.3$}
+		\label{fig:mixture_sample_data}
+	\end{figure}
+	
+	\begin{figure}[h]%
+		\centering
+		\subfigure[][]
+		{\label{fig:mixture_mh_s1_dist}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{mixture_mh_s1_dist}
+		} %\qquad
+		\subfigure[][]{
+			\label{fig:mixture_mh_s2_dist}%
+			\includegraphics[keepaspectratio, width=0.4\linewidth]{mixture_mh_s2_dist}%
+		}
+		\caption{The generated MH samples, prior for $\mu_1$ (red) and prior for  (green) used for \subref{fig:mixture_mh_s1_dist} $(\mu_1 = -5, \mu_2 = 10)$ and \subref{fig:mixture_mh_s2_dist} $(\mu_1 = 2, \mu_2 = 3)$.}
+		\label{fig:mixture_mh_dist}
+	\end{figure}
 	
 \end{document}
