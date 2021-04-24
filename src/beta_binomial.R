@@ -176,7 +176,7 @@ rm(beta_bin_data_file2)
 ## Visualization of prior and posterior ##
 ##########################################
 
-s1 <- beta_bin_bench_vals[[2]]
+s1 <- beta_bin_bench_vals[[1]]
 x <- s1$prior_x
 y_theoretical <- dbeta(x, 
                        shape1 = s1$param["alpha"] + sum(data), 
